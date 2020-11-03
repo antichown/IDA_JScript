@@ -1,3 +1,4 @@
+getFunc(IndexVaOrName)
 getSegs([optSegNameBaseorIndex])
 delSeg(nameOrBase)
 segExists(nameOrBase)

@@ -8,8 +8,8 @@ IF NOT EXIST C:\IDA7.5 GOTO NO75
 echo Installing for 7.5
 IF EXIST %p1% del %p1%
 IF EXIST %p2% del %p2%
-copy D:\_code\RE_Plugins\IDASrvr2\bin\idasrvr2.dll C:\IDA7.5\plugins\
-copy D:\_code\RE_Plugins\IDASrvr2\bin\idasrvr2_64.dll C:\IDA7.5\plugins\
+copy D:\_code\IDA_JScript\IDASrvr2\bin\idasrvr2.dll C:\IDA7.5\plugins\
+copy D:\_code\IDA_JScript\IDASrvr2\bin\idasrvr2_64.dll C:\IDA7.5\plugins\
 :NO75
 
 pause

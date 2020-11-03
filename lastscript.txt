@@ -1,1 +1,1 @@
-app.
+t( ida.getFunc("_parse_cmdline") ) 

@@ -19,6 +19,10 @@ Attribute ipc.VB_VarHelpID = -1
 Private tmp_x As New ULong64
 Public is64BitMode As Boolean
 
+Function getFunc(IndexVaOrName) 'as JSON string
+    getFunc = ipc.SendCmdRecvText("getfunc:" & IndexVaOrName & ":" & Form1.hwnd)
+End Function
+
 Function funcMap(ByRef count As Long)  'not really for idajs, for integrating idacompare functionality
     Dim path As String, p As String
     'fprintf(fp, "%d,%s,0x%llx,0x%llx,0x%x,%d\n", i, name.c_str(), ua1, ua2, (fu->end_ea - fu->start_ea), fu->referers);

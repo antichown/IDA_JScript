@@ -96,6 +96,7 @@
 	 Function segExists(nameOrBase)
 	 Function delSeg(nameOrBase)
 	 Function getSegs(optSegNameOrBase)
+	 Function getFunc(IndexVaOrName)
 */
 
 function idaClass(){
@@ -105,6 +106,19 @@ function idaClass(){
 	/*this.caption = function(msg){ //now a property let
 		return resolver('ida.Caption', arguments.length,0, msg);
 	}*/
+	
+	this.getFunc = function(IndexVaOrName){ //ida api returns a json object {index,name,start,end,size} 
+		json = resolver('ida.getFunc',arguments.length,0,IndexVaOrName);
+		json = json.split("'").join('"')
+		//return json; //for debugging...
+		try{
+			j = JSON.parse(json);
+			return j
+		}catch(e){
+			//alert("Error in getFunc: " + json + "\r\n\r\n" + e)
+			return null; 
+		}
+	}
 	
 	this.getSegs = function(optSegNameOrBase){ //ida api returns a json array which we turn into an js object [{name,base,size,index}]
 		json = resolver('ida.getSegs',0,0);    //arg is for js stub only...

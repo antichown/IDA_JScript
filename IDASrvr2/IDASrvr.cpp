@@ -25,7 +25,7 @@ bool m_debug = true;
 #define USE_STANDARD_FILE_FUNCTIONS
 
 #define HAS_DECOMPILER //if you dont have the hexrays decompiler comment this line out..
-#define __EA64__  //create the plugin for the 64 bit databases
+//#define __EA64__  //create the plugin for the 64 bit databases
 
 #ifndef _WIN64
 	#error "You can only compile this as an x64 binary, 32/64 bit mode is set with __EA64__ define above"
@@ -113,6 +113,7 @@ int __stdcall DumpFunction(int funcIndex, int flags, char* outFilePath);
 int __stdcall DumpFunctionBytes(int funcIndex, char* outFilePath);
 int __stdcall GetImm(__int64 ea, int hwnd); //not returning anything?
 int __stdcall get_operand_value(__int64 va, int n, int hwnd);
+bool getFunc(__int64 ua1, char* arg, qstring* q, bool ua1ConversionSuccess);
 
 //void __stdcall SetFocusSelectLine(void);
 
@@ -498,6 +499,7 @@ int HandleMsg(char* m){
 	   61 getsegs:hwnd
 	   62 funcmap:path  since a full dump of all functions probably has 1-10k+ entries just dump to tmp file 
 	   63 importpatch:path:va
+	   64 getfunc:IndexVAorName:hwnd
 
 	   todo: not implemented in regular call yet...(40-43 are quick call usable even for x64)
 	     case 49: //isX64 disasm
@@ -535,13 +537,15 @@ int HandleMsg(char* m){
     /*               49           50        51          52        53        54        55         56        57 */
 		             "isx64","getx64","dumpfunc","dumpfuncbytes", "immvals","getopv", "addenum", "addenummem", "getenum",
 	/*               58           59        60          61        62        63        64         65        66 */
-		             "addseg","segexists", "delseg","getsegs","funcmap","importpatch",
+		             "addseg","segexists", "delseg","getsegs","funcmap","importpatch","getfunc",
 					"\x00"};
 	FILE* fp = 0;
 	qstring name;
 	unsigned __int64 i=0;
 	unsigned __int64 x=0;
+	unsigned char* data=0;
 	int argc=0;
+	int fsize=0;;
 	int* zz = 0; //used only for returning 8 bit values with mask always 32bit safe and used as return value...
 
 	if (m == 0) {
@@ -948,7 +952,7 @@ int HandleMsg(char* m){
 				  if (argc != 2) { msg("getSegs needs 2 arg\n"); return -1; }
 				  if (args[1][1] == '_') args[1][1] = ':'; //fix cheesy workaround to tokinizer reserved char..
 				  	
-				  int fsize = FileSize(args[1]);
+				  fsize = FileSize(args[1]);
 				  //q.sprnt("%d:%s:%llx", fsize, args[1],ua2);
 				  //MessageBox(0,q.c_str(),"",0); ;
 				  if (fsize < 1) {return -2;}
@@ -956,7 +960,7 @@ int HandleMsg(char* m){
 				  fp = fopen(args[1], "r");
 				  if (fp == NULL) return -3;
 
-				  unsigned char* data = (unsigned char*)malloc(fsize);
+				  data = (unsigned char*)malloc(fsize);
 				  if(data == NULL){fclose(fp); return -4;}
 				  fread(&data[0],1,fsize,fp);
 				  fclose(fp);
@@ -969,11 +973,52 @@ int HandleMsg(char* m){
 				  fclose(fp);
 				  return 1;
 
+		  case 64: // getfunc:IndexVAorName:hwnd
+				  if (argc != 2) { msg("getfunc needs 2 arg\n"); return -1; }
+				  if (!getFunc(ua1, args[1], &q, b1)) return -1;
+				  SendTextMessage(atoi(args[2]), (char*)q.c_str(), q.length());
 	}				
 
 
 };
 
+bool getFunc(__int64 ua1, char* arg, qstring* q, bool ua1ConversionSuccess){
+
+	qstring fn;
+	int index = -1;
+	func_t* f;
+
+	if (ua1ConversionSuccess && ua1 >= 0)  //its a numeric arg
+	{
+		if (ua1 < ImageBase()) //its a function index
+		{ 
+			index = (int)ua1;
+			f = getn_func(index);
+			if(f==NULL) return false;
+			if(get_func_name(&fn, f->start_ea) < 1) fn="";
+		}
+		else //its a function va
+		{ 
+			index = get_func_num(ua1);
+			f = getn_func(index);
+			if (f == NULL) return false;
+			if (get_func_name(&fn, f->start_ea) < 1) fn = "";
+		}
+	}
+	else //its a function name
+	{
+		fn = arg;
+		ua1 = EaForFxName(arg);
+		if(ua1 < 0) return false;
+		index = get_func_num(ua1);
+		f = getn_func(index);
+		if (f == NULL) return false;
+	}
+
+	q->sprnt("{'index':%d, 'name':'%s', 'start':'0x%llx', 'end':'0x%llx', 'size':'0x%X'}", index, fn.c_str(), (__int64)f->start_ea, (__int64)f->end_ea, f->size());
+	return true;
+
+}
 
 //we can only assume these args/ret val to be 32bit because we must support a 32 bit sendmessage caller (vb6)
 //The integral types WPARAM , LPARAM , and LRESULT are 32 bits wide on 32-bit systems and 64 bits wide on 64-bit systems

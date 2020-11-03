@@ -302,7 +302,7 @@
       <OutputFile>.\Debug/IDASrvr.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>D:\_code\RE_Plugins\IDASrvr2\bin\install.bat</Command>
+      <Command>D:\_code\IDA_JScript\IDASrvr2\bin\install.bat</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
