@@ -24,6 +24,15 @@ Begin VB.Form Form1
    ScaleHeight     =   7020
    ScaleWidth      =   10230
    StartUpPosition =   2  'CenterScreen
+   Begin MSWinsockLib.Winsock udp 
+      Left            =   9720
+      Tag             =   "udp bridge"
+      Top             =   225
+      _ExtentX        =   741
+      _ExtentY        =   741
+      _Version        =   393216
+      Protocol        =   1
+   End
    Begin MSComctlLib.ProgressBar pb 
       Height          =   150
       Left            =   90
@@ -37,6 +46,7 @@ Begin VB.Form Form1
    End
    Begin MSWinsockLib.Winsock Winsock1 
       Left            =   9045
+      Tag             =   "remote client"
       Top             =   0
       _ExtentX        =   741
       _ExtentY        =   741
@@ -171,6 +181,7 @@ Begin VB.Form Form1
          _ExtentX        =   17251
          _ExtentY        =   3916
          _Version        =   393217
+         Enabled         =   -1  'True
          ScrollBars      =   3
          TextRTF         =   $"Form1.frx":0CCA
       End
@@ -233,6 +244,9 @@ Begin VB.Form Form1
       Begin VB.Menu mnuImportPatch 
          Caption         =   "Import Patch"
       End
+      Begin VB.Menu mnuUDPBridge 
+         Caption         =   "UDP Bridge"
+      End
       Begin VB.Menu mnuShowAddrList 
          Caption         =   "View Address List"
       End
@@ -258,6 +272,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Option Explicit
+
 Public ida As New CIDAScript
 Public loadedFile As String
 Public sci As sci2.SciSimple
@@ -357,6 +373,22 @@ Private Sub mnuShowAddrList_Click()
     al.showList
 End Sub
 
+Private Sub mnuUDPBridge_Click()
+    On Error Resume Next
+    mnuUDPBridge.Checked = Not mnuUDPBridge.Checked
+    If Not mnuUDPBridge.Checked Then
+        udp.Close
+    Else
+        udp.LocalPort = 3333
+        udp.Bind
+        If Err.Number <> 0 Then
+            MsgBox "UDP Bridge: Failed to bind to port 3333", vbInformation
+        Else
+            List1.AddItem "Now listening for IDA commands on udp 3333 "
+        End If
+    End If
+End Sub
+
 Private Sub txtjs_StateChanged(state As dukDbg.dbgStates)
     
     On Error Resume Next
@@ -370,7 +402,7 @@ Private Sub txtjs_StateChanged(state As dukDbg.dbgStates)
         ida.writeFile App.path & "\lastScript.txt", txtjs.Text
         
         If Not ida.isUp Then
-            hwnd = Form2.SelectIDAInstance(True, False)
+            hwnd = frmSelect.SelectIDAInstance(True, False)
             If hwnd <> 0 Then
                 ida.ipc.RemoteHWND = hwnd
                 idb = ida.loadedFile
@@ -398,7 +430,7 @@ Private Sub Form_Load()
     On Error Resume Next
     
     Dim hwnd As Long
-    Dim idb As String
+    Dim idb As String, x As String
     Dim windows As Long
     
     'quick way for IDASrvr to be able to find us for launching..
@@ -539,7 +571,7 @@ Private Sub Form_Load()
             List1.AddItem "IDB: " & idb
             lblIDB = "Current IDB: " & fso.FileNameFromPath(idb)
         Else
-            hwnd = Form2.SelectIDAInstance()
+            hwnd = frmSelect.SelectIDAInstance()
             If hwnd <> 0 Then
                 ida.ipc.RemoteHWND = hwnd
                 idb = ida.loadedFile
@@ -552,13 +584,13 @@ Private Sub Form_Load()
     
     List1.Move Text1.Left, Text1.Top, Text1.Width, Text1.Height
     
-    X = " Built in classes: ida. fso. app. x64. remote. al. pb. [hitting the dot will display intellisense and open paran codetip intellisense] \n\n" & _
+    x = " Built in classes: ida. fso. app. x64. remote. al. pb. [hitting the dot will display intellisense and open paran codetip intellisense] \n\n" & _
         "global functions: \n\t alert(x), \n\t h(x) [int to hex], \n" & _
         "\t t(x) [append this textbox with x] \n" & _
         "\t d(x) [add x to debug pane list]\n\n" & _
         "Note: you must use correct case for calls to built in objects intellisense will help you."
         
-    Text1.Text = Replace(Replace(X, "\n", vbCrLf), "\t", vbTab)
+    Text1.Text = Replace(Replace(x, "\n", vbCrLf), "\t", vbTab)
     
 End Sub
 
@@ -620,7 +652,7 @@ Private Sub mnuFormatJS_Click()
     'txtjs.Text = "a=0;if(a){a++;}else{a++;}a=0;a=0"
     
     Set duk = New CDukTape
-    tmrFormatting.enabled = True
+    'tmrFormatting.enabled = True
     If Not duk.AddObject(txtjs, "textbox") Then
         Exit Sub
     End If
@@ -690,7 +722,7 @@ Private Sub mnuSelectIDAInstance_Click()
     Dim idb As String
     
     On Error Resume Next
-    hwnd = Form2.SelectIDAInstance()
+    hwnd = frmSelect.SelectIDAInstance()
     If hwnd = 0 Then Exit Sub
     
     ida.ipc.RemoteHWND = hwnd
@@ -763,6 +795,40 @@ End Sub
 
 Private Sub txtjs_printOut(msg As String)
     ida.t "duk.print> " & msg
+End Sub
+
+
+Private Sub udp_DataArrival(ByVal bytesTotal As Long)
+   
+    On Error Resume Next
+    
+    Dim tmp As String
+    Dim args() As String
+    
+    udp.GetData tmp
+    List1.AddItem tmp
+    
+    If InStr(tmp, " ") < 1 Then
+        args = Split(tmp, ":")
+    Else
+        args = Split(tmp, " ") 'original style is default..
+    End If
+    
+    Select Case args(0)
+        Case "jmp": ida.jump args(1)
+                    '"0x6B380663" or 1798833763 or 0x1122334455667788
+                    
+        Case "jmpfunc": ida.jump ida.funcVAByName(args(1))
+                        'ida.QuickCall qcmSetFocusSelectLine
+                        
+        Case "jmp_rva": ida.jumpRVA args(1)
+                        'ida.QuickCall qcmSetFocusSelectLine
+'        Case "curidb":
+'                        sck.RemoteHost = sck.RemoteHostIP
+'                        sck.RemotePort = 4444
+'                        sck.SendData "curidb " & ida.LoadedFile & vbCrLf
+    End Select
+
 End Sub
 
 

@@ -1,5 +1,5 @@
 VERSION 5.00
-Begin VB.Form Form2 
+Begin VB.Form frmSelect 
    Caption         =   "Select IDA Server to Connect to"
    ClientHeight    =   3195
    ClientLeft      =   60
@@ -43,7 +43,7 @@ Begin VB.Form Form2
       Width           =   6015
    End
 End
-Attribute VB_Name = "Form2"
+Attribute VB_Name = "frmSelect"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
@@ -61,7 +61,7 @@ Public Function SelectIDAInstance(Optional refresh As Boolean = True, Optional a
     If refresh Then
         cnt = Form1.ida.ipc.FindActiveIDAWindows()
     Else
-        cnt = Form1.ida.ipc.Servers.Count
+        cnt = Form1.ida.ipc.Servers.count
     End If
     
     If cnt = 0 Then
@@ -80,7 +80,7 @@ Public Function SelectIDAInstance(Optional refresh As Boolean = True, Optional a
                 Form1.ida.ipc.Servers.Remove "hwnd:" & x
             Else
                 Form1.ida.ipc.RemoteHWND = CLng(x)
-                pth = Form1.ida.LoadedFile
+                pth = Form1.ida.loadedFile
                 pth = fso.FileNameFromPath(pth)
                 List1.AddItem x & ": " & pth
             End If
