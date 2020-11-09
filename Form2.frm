@@ -52,16 +52,16 @@ Attribute VB_Exposed = False
 
 Public Function SelectIDAInstance(Optional refresh As Boolean = True, Optional autoSelectIfOnlyOne As Boolean = True) As Long
     
-    Dim x
+    Dim X
     Dim cnt As Long
     Dim pth As String
     
     On Error Resume Next
     
     If refresh Then
-        cnt = Form1.ida.ipc.FindActiveIDAWindows()
+        cnt = frmMain.ida.ipc.FindActiveIDAWindows()
     Else
-        cnt = Form1.ida.ipc.Servers.count
+        cnt = frmMain.ida.ipc.Servers.count
     End If
     
     If cnt = 0 Then
@@ -70,19 +70,19 @@ Public Function SelectIDAInstance(Optional refresh As Boolean = True, Optional a
         Exit Function
         
     ElseIf cnt = 1 And autoSelectIfOnlyOne Then
-        SelectIDAInstance = Form1.ida.ipc.Servers(1)
+        SelectIDAInstance = frmMain.ida.ipc.Servers(1)
         Unload Me
         Exit Function
         
     Else
-       For Each x In Form1.ida.ipc.Servers 'remove any that arent still valid..
-            If IsWindow(x) = 0 Then
-                Form1.ida.ipc.Servers.Remove "hwnd:" & x
+       For Each X In frmMain.ida.ipc.Servers 'remove any that arent still valid..
+            If IsWindow(X) = 0 Then
+                frmMain.ida.ipc.Servers.Remove "hwnd:" & X
             Else
-                Form1.ida.ipc.RemoteHWND = CLng(x)
-                pth = Form1.ida.loadedFile
+                frmMain.ida.ipc.RemoteHWND = CLng(X)
+                pth = frmMain.ida.loadedFile
                 pth = fso.FileNameFromPath(pth)
-                List1.AddItem x & ": " & pth
+                List1.AddItem X & ": " & pth
             End If
         Next
         List1.ListIndex = 0
@@ -114,7 +114,7 @@ End Sub
 
 Private Sub Form_Load()
     On Error Resume Next
-    Me.Icon = Form1.Icon
+    Me.Icon = frmMain.Icon
 End Sub
 
 Private Sub List1_DblClick()

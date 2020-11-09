@@ -488,10 +488,10 @@ Private Sub Form_Load()
     Dim startPos As String, endPos As String, j As Long
     Dim path As String, tmp, X() As String, count As Long
     
-    Me.Icon = Form1.Icon
+    Me.Icon = frmMain.Icon
     lv.SetColumnHeaders "n,Start,End,Size,Name*,Refs", "600,1605,1650,1020,2790,1440"
 
-    x64Mode = Form1.ida.is64BitMode
+    x64Mode = frmMain.ida.is64BitMode
 
     txtDB = GetSetting("IdaCompare", "settings", "txtdb")
     If Not fso.FileExists(txtDB) Then txtDB = Empty
@@ -503,9 +503,9 @@ Private Sub Form_Load()
     Me.refresh
     
     StartBenchMark
-    path = Form1.ida.funcMap(count)
+    path = frmMain.ida.funcMap(count)
     If Len(path) = 0 Then
-        MsgBox "Dumping function map failed from: " & Form1.ida.loadedFile, vbInformation
+        MsgBox "Dumping function map failed from: " & frmMain.ida.loadedFile, vbInformation
         Unload Me
         Exit Sub
     End If

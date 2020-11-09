@@ -92,10 +92,10 @@
 	 Function add_enum_member(id,name,value)
 	 Function get_enum(name)
 	 Function importFile(va, path, optNewSegName)
-	 Function addSegment(base, size, name)
-	 Function segExists(nameOrBase)
-	 Function delSeg(nameOrBase)
-	 Function getSegs(optSegNameOrBase)
+	 Function addSect(base, size, name)
+	 Function sectExists(nameOrBase)
+	 Function delSect(nameOrBase)
+	 Function getSects(optSegNameOrBase)
 	 Function getFunc(IndexVaOrName)
 */
 
@@ -120,8 +120,8 @@ function idaClass(){
 		}
 	}
 	
-	this.getSegs = function(optSegNameOrBase){ //ida api returns a json array which we turn into an js object [{name,base,size,index}]
-		json = resolver('ida.getSegs',0,0);    //arg is for js stub only...
+	this.getSects = function(optSegNameOrBase){ //ida api returns a json array which we turn into an js object [{name,base,size,index}]
+		json = resolver('ida.getSects',0,0);    //arg is for js stub only...
 		json = json.split("'").join('"')
 		try{
 			if(optSegNameOrBase == -1) return json;      //ancient chinese secret..useful for debugging anyway...
@@ -134,21 +134,21 @@ function idaClass(){
 				}
 			}
 		}catch(e){
-			alert("Error in getSegs: " + e)
+			alert("Error in getSects: " + e)
 			return json; 
 		}
 	}
 	
-	this.delSeg = function(nameOrBase){
-		return resolver('ida.delSeg', arguments.length,0, nameOrBase);
+	this.delSect = function(nameOrBase){
+		return resolver('ida.delSect', arguments.length,0, nameOrBase);
 	}
 	
-	this.segExists = function(nameOrBase){
-		return resolver('ida.segExists', arguments.length,0, nameOrBase);
+	this.sectExists = function(nameOrBase){
+		return resolver('ida.sectExists', arguments.length,0, nameOrBase);
 	}
 	
-	this.addSegment = function(base, size, name){
-		return resolver('ida.addSegment', arguments.length,0, base, size, name);
+	this.addSect = function(base, size, name){
+		return resolver('ida.addSect', arguments.length,0, base, size, name);
 	}
 	
 	this.importFile = function(va, path, optNewSegName){

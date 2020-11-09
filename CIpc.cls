@@ -114,7 +114,7 @@ Function FindActiveIDAWindows(Optional async As Boolean = False) As Long
      'sending thier command window hwnd as the lParam to register themselves with the clients.
      'clients track these hwnds.
      
-     'Form1.List2.AddItem "Broadcasting message looking for IDASrvr instances msg= " & IDASRVR_BROADCAST_MESSAGE
+     'frmmain.List2.AddItem "Broadcasting message looking for IDASrvr instances msg= " & IDASRVR_BROADCAST_MESSAGE
      
      If async Then
         PostMessage HWND_BROADCAST, IDASRVR_BROADCAST_MESSAGE, subclassed_hwnd, 0
@@ -123,16 +123,16 @@ Function FindActiveIDAWindows(Optional async As Boolean = False) As Long
      End If
      
       ValidateActiveIDAWindows
-      FindActiveIDAWindows = Servers.Count
+      FindActiveIDAWindows = Servers.count
      
  End Function
 
  Private Function ValidateActiveIDAWindows()
      On Error Resume Next
-     Dim x
-     For Each x In Servers 'remove any that arent still valid..
-        If IsWindow(x) = 0 Then
-            Servers.Remove "hwnd:" & x
+     Dim X
+     For Each X In Servers 'remove any that arent still valid..
+        If IsWindow(X) = 0 Then
+            Servers.Remove "hwnd:" & X
         End If
      Next
  End Function
@@ -159,8 +159,8 @@ End Function
 Function quickCall(msg As quickCallMessages, Optional arg1 As Long = 0) As Long
     
     If IsWindow(RemoteHWND) = 0 Then
-        Form1.List1.AddItem "SendData Invalid hwnd: " & RemoteHWND
-        Form1.lblIDB.caption = "Current DB (Null)"
+        frmMain.List1.AddItem "SendData Invalid hwnd: " & RemoteHWND
+        frmMain.lblIDB.caption = "Current DB (Null)"
         Exit Function
     End If
     
@@ -175,12 +175,12 @@ Function Send(msg As String) As Long
     Dim CopyData As COPYDATASTRUCT
     
     If IsWindow(RemoteHWND) = 0 Then
-        Form1.List1.AddItem "SendData Invalid hwnd: " & RemoteHWND
-        Form1.lblIDB.caption = "Current DB (Null)"
+        frmMain.List1.AddItem "SendData Invalid hwnd: " & RemoteHWND
+        frmMain.lblIDB.caption = "Current DB (Null)"
         Exit Function
     End If
     
-    Form1.List1.AddItem "SendData: " & msg
+    frmMain.List1.AddItem "SendData: " & msg
     
     CopyMemory buffer(1), ByVal msg, Len(msg)
     CopyData.dwFlag = 3
@@ -225,7 +225,7 @@ Private Sub sc_MessageReceived(hwnd As Long, wMsg As Long, wParam As Long, lPara
       If wMsg = IDASRVR_BROADCAST_MESSAGE Then
         If IsWindow(lParam) = 1 Then
             If Not KeyExistsInCollection(Servers, "hwnd:" & lParam) Then
-                Servers.Add lParam, "hwnd:" & lParam
+                Servers.add lParam, "hwnd:" & lParam
             End If
         End If
      End If
@@ -256,7 +256,7 @@ Private Function RecieveTextMessage(lParam As Long, ByRef msg As String) As Bool
         'heres where we work with the intercepted message
         msg = temp
         RecieveTextMessage = True
-        Form1.List1.AddItem "RecvData: " & msg
+        frmMain.List1.AddItem "RecvData: " & msg
     End If
     
 End Function

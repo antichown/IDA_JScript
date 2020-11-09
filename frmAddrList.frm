@@ -82,8 +82,8 @@ Sub addAddr(addr, txt)
     If IsNumeric(addr) Then addr = "0x" & Hex(addr)
     Set li = lv.ListItems.add(, , addr)
     li.subItems(2) = txt
-    index = Form1.ida.funcIndexFromVA(addr)
-    li.subItems(1) = Form1.ida.functionName(index)
+    index = frmMain.ida.funcIndexFromVA(addr)
+    li.subItems(1) = frmMain.ida.functionName(index)
 End Sub
 
 Sub showList()
@@ -113,7 +113,7 @@ Private Sub Form_Load()
     FormPos Me, True
     Me.Visible = False
     mnuPopup.Visible = False
-    Me.Icon = Form1.Icon
+    Me.Icon = frmMain.Icon
     mnuClearOnImport.Checked = True
     lv.SetColumnHeaders "Address,Func*,Text", "2400"
     lv.SetFont "Courier", 12
@@ -129,10 +129,10 @@ End Sub
 
 Private Sub lv_ItemClick(ByVal Item As MSComctlLib.ListItem)
     On Error Resume Next
-    Form1.ida.jump Item.Text
+    frmMain.ida.jump Item.Text
 End Sub
 
-Private Sub lv_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub lv_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If Button = 2 Then PopupMenu mnuPopup
 End Sub
 
@@ -155,7 +155,7 @@ End Sub
 Private Sub mnuDelSel_Click()
     On Error Resume Next
     Dim li As ListItem, i
-    For i = lv.currentLV.ListItems.Count To 1 Step -1
+    For i = lv.currentLV.ListItems.count To 1 Step -1
         Set li = lv.currentLV.ListItems(i)
         If li.selected Then lv.currentLV.ListItems.Remove i
     Next
@@ -163,12 +163,12 @@ End Sub
 
 Private Sub mnuEditSel_Click()
     On Error Resume Next
-    Dim li As ListItem, x As String
+    Dim li As ListItem, X As String
     Set li = lv.SelectedItem
     If li Is Nothing Then Exit Sub
-    x = InputBox("Edit the CSV data: ", , li.Text & "," & li.subItems(1) & "," & li.subItems(2))
-    If Len(x) = 0 Then Exit Sub
-    ImportItem li, x
+    X = InputBox("Edit the CSV data: ", , li.Text & "," & li.subItems(1) & "," & li.subItems(2))
+    If Len(X) = 0 Then Exit Sub
+    ImportItem li, X
 End Sub
 
 Private Sub mnuImportClip_Click()
@@ -176,11 +176,11 @@ Private Sub mnuImportClip_Click()
     doImport Clipboard.GetText
 End Sub
 
-Function doImport(x)
+Function doImport(X)
     On Error Resume Next
     Dim xx() As String, a, b, xxx, li As ListItem, z() As String
     If mnuClearOnImport.Checked Then lv.ListItems.Clear
-    xx = Split(x, vbCrLf)
+    xx = Split(X, vbCrLf)
     For Each xxx In xx
          Set li = lv.ListItems.add()
          ImportItem li, CStr(xxx)
@@ -216,7 +216,7 @@ Private Sub mnuImportXrefsTo_Click()
     v = InputBox("Enter 'address to get xrefs to")
     If Len(v) = 0 Then Exit Sub
     If InStr(1, v, "0x", vbTextCompare) < 1 Then v = "0x" & v
-    With Form1.ida
+    With frmMain.ida
         'tmp = .funcVAByName(v)
         'If tmp <> 0 Then v = tmp 'it was a name, standardize to address
         refs = Split(.xRefsTo(v), ",")

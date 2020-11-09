@@ -3,7 +3,7 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Object = "{047848A0-21DD-421D-951E-B4B1F3E1718D}#90.0#0"; "dukDbg.ocx"
 Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "richtx32.ocx"
 Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
-Begin VB.Form Form1 
+Begin VB.Form frmMain 
    Caption         =   "IDA JScript 2 - http://sandsprite.com"
    ClientHeight    =   7020
    ClientLeft      =   165
@@ -181,7 +181,6 @@ Begin VB.Form Form1
          _ExtentX        =   17251
          _ExtentY        =   3916
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   3
          TextRTF         =   $"Form1.frx":0CCA
       End
@@ -267,7 +266,7 @@ Begin VB.Form Form1
       End
    End
 End
-Attribute VB_Name = "Form1"
+Attribute VB_Name = "frmMain"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
@@ -430,7 +429,7 @@ Private Sub Form_Load()
     On Error Resume Next
     
     Dim hwnd As Long
-    Dim idb As String, x As String
+    Dim idb As String, X As String
     Dim windows As Long
     
     'quick way for IDASrvr to be able to find us for launching..
@@ -464,7 +463,7 @@ Private Sub Form_Load()
                                 "delCodeXRef delDataXRef funcVAByName renameFunc find decompile jump jumpRVA refresh undefine showEA hideEA " & _
                                 "removeName makeCode funcIndexFromVA nextEA prevEA funcCount() numFuncs() functionStart functionEnd readByte " & _
                                 "originalByte imageBase screenEA() quickCall clearDecompilerCache() isCode isData readLong readShort readQWord " & _
-                                "dumpFunc dumpFuncBytes getopv add_enum get_enum add_enum_member importFile addSegment segExists delSeg getSegs " & _
+                                "dumpFunc dumpFuncBytes getopv add_enum get_enum add_enum_member importFile addSect sectExists delSect getSects " & _
                                 "getFunc"
                                
      txtjs.AddIntellisense "list", "AddItem Clear ListCount Enabled"
@@ -584,13 +583,13 @@ Private Sub Form_Load()
     
     List1.Move Text1.Left, Text1.Top, Text1.Width, Text1.Height
     
-    x = " Built in classes: ida. fso. app. x64. remote. al. pb. [hitting the dot will display intellisense and open paran codetip intellisense] \n\n" & _
+    X = " Built in classes: ida. fso. app. x64. remote. al. pb. [hitting the dot will display intellisense and open paran codetip intellisense] \n\n" & _
         "global functions: \n\t alert(x), \n\t h(x) [int to hex], \n" & _
         "\t t(x) [append this textbox with x] \n" & _
         "\t d(x) [add x to debug pane list]\n\n" & _
         "Note: you must use correct case for calls to built in objects intellisense will help you."
         
-    Text1.Text = Replace(Replace(x, "\n", vbCrLf), "\t", vbTab)
+    Text1.Text = Replace(Replace(X, "\n", vbCrLf), "\t", vbTab)
     
 End Sub
 

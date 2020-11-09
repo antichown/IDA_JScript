@@ -20,7 +20,7 @@ Private tmp_x As New ULong64
 Public is64BitMode As Boolean
 
 Function getFunc(IndexVaOrName) 'as JSON string
-    getFunc = ipc.SendCmdRecvText("getfunc:" & IndexVaOrName & ":" & Form1.hwnd)
+    getFunc = ipc.SendCmdRecvText("getfunc:" & IndexVaOrName & ":" & frmMain.hwnd)
 End Function
 
 Function funcMap(ByRef count As Long)  'not really for idajs, for integrating idacompare functionality
@@ -32,20 +32,20 @@ Function funcMap(ByRef count As Long)  'not really for idajs, for integrating id
     If count > 0 Then funcMap = path Else fso.deleteFile path
 End Function
 
-Function getSegs()
-    getSegs = ipc.SendCmdRecvText("getsegs:" & Form1.hwnd)
+Function getSects()
+    getSects = ipc.SendCmdRecvText("getsegs:" & frmMain.hwnd)
 End Function
 
-Function delSeg(nameOrBase)
-    delSeg = ipc.SendCmdRecvInt("delseg:" & nameOrBase)
+Function delSect(nameOrBase)
+    delSect = ipc.SendCmdRecvInt("delseg:" & nameOrBase)
 End Function
 
-Function segExists(nameOrBase)
-    segExists = ipc.SendCmdRecvInt("segexists:" & nameOrBase)
+Function sectExists(nameOrBase)
+    sectExists = ipc.SendCmdRecvInt("segexists:" & nameOrBase)
 End Function
 
-Function addSegment(base, Size, Name)
-        addSegment = ipc.SendCmdRecvInt("addseg:" & base & ":" & Size & ":" & Name)
+Function addSect(base, Size, Name)
+        addSect = ipc.SendCmdRecvInt("addseg:" & base & ":" & Size & ":" & Name)
 End Function
 
 Function importFile(va, path, optNewSegName)
@@ -61,8 +61,8 @@ Function importFile(va, path, optNewSegName)
     ul = va
     
     If Len(optNewSegName) > 0 Then
-        If segExists(va) = 0 Then
-            If addSegment(va, FileLen(path), optNewSegName) = 0 Then GoTo hell
+        If sectExists(va) = 0 Then
+            If addSect(va, FileLen(path), optNewSegName) = 0 Then GoTo hell
         End If
     End If
      
@@ -124,7 +124,7 @@ Function add_enum_member(id, Name, val) As Long
 End Function
 
 Function immvals(ea)
-    immvals = ipc.SendCmdRecvText("immvals:" & ea & ":" & Form1.hwnd)
+    immvals = ipc.SendCmdRecvText("immvals:" & ea & ":" & frmMain.hwnd)
     MsgBox immvals
 End Function
 
@@ -133,7 +133,7 @@ End Function
 'End Function
 
 Function getopv(ea, n)
-    getopv = ipc.SendCmdRecvText("getopv:" & ea & ":" & n & ":" & Form1.hwnd)
+    getopv = ipc.SendCmdRecvText("getopv:" & ea & ":" & n & ":" & frmMain.hwnd)
 End Function
 
 Function dumpFunc(i, flags)
@@ -155,18 +155,18 @@ End Function
 Private Sub Class_Initialize()
     Set ipc = New CIpc
     ipc.FindClient "IDA_SERVER2"
-    ipc.Listen Form1.hwnd
+    ipc.Listen frmMain.hwnd
     tmp_x.use0x = True
     tmp_x.useTick = False
 End Sub
 
 Property Get timeout()
-    timeout = Form1.txtjs.timeout
+    timeout = frmMain.txtjs.timeout
 End Property
 
 Property Let timeout(v)
     On Error Resume Next
-    Form1.txtjs.timeout = CLng(v)
+    frmMain.txtjs.timeout = CLng(v)
 End Property
 
 Property Get is32Bit() As Boolean
@@ -192,8 +192,8 @@ Sub do_events()
 End Sub
 
 Sub die(msg)
-    Form1.txtjs.timeout = 1
-    Form1.txtjs.StopExecution
+    frmMain.txtjs.timeout = 1
+    frmMain.txtjs.StopExecution
     t msg
 End Sub
 
@@ -202,8 +202,8 @@ Sub clearDecompilerCache()
 End Sub
 
 Property Let caption(msg)
-    Form1.caption = msg
-    Form1.refresh
+    frmMain.caption = msg
+    frmMain.refresh
     DoEvents
 End Property
 
@@ -228,17 +228,17 @@ Function makeUnk(va, Size)
 End Function
 
 Property Get loadedFile() As String
-    loadedFile = ipc.SendCmdRecvText("loadedfile:" & Form1.hwnd)
+    loadedFile = ipc.SendCmdRecvText("loadedfile:" & frmMain.hwnd)
 End Property
 
 Sub t(Data)
-    Form1.Text1.Text = Form1.Text1.Text & vbCrLf & Data
-    Form1.Text1.SelStart = Len(Form1.Text1.Text)
+    frmMain.Text1.Text = frmMain.Text1.Text & vbCrLf & Data
+    frmMain.Text1.SelStart = Len(frmMain.Text1.Text)
     DoEvents
 End Sub
 
 Sub clearLog()
-    Form1.Text1.Text = Empty
+    frmMain.Text1.Text = Empty
 End Sub
 
 Function patchString(va, str, Optional isUnicode = False)
@@ -273,7 +273,7 @@ Function intToHex(X)
     End If
     
     If Not tmp_x.fromString(X) Then
-        Form1.List1.AddItem "Failed to convert x: " & X
+        frmMain.List1.AddItem "Failed to convert x: " & X
         Exit Function
     End If
     
@@ -282,7 +282,7 @@ Function intToHex(X)
 End Function
 
 Function getAsm(va)
-    getAsm = ipc.SendCmdRecvText("getasm:" & va & ":" & Form1.hwnd)
+    getAsm = ipc.SendCmdRecvText("getasm:" & va & ":" & frmMain.hwnd)
 End Function
 
 Function instSize(offset)
@@ -309,7 +309,7 @@ End Function
 
 Function xRefsTo(offset) 'returns CSV list
     Dim tmp
-    tmp = ipc.SendCmdRecvText("refsto:" & offset & ":" & Form1.hwnd)
+    tmp = ipc.SendCmdRecvText("refsto:" & offset & ":" & frmMain.hwnd)
     If Right(tmp, 1) = "," Then tmp = Mid(tmp, 1, Len(tmp) - 1)
     If is64BitMode Then
         xRefsTo = csvToHex(tmp)
@@ -321,7 +321,7 @@ End Function
 
 Function xRefsFrom(offset) 'returns CSV list
     Dim tmp
-    tmp = ipc.SendCmdRecvText("refsfrom:" & offset & ":" & Form1.hwnd)
+    tmp = ipc.SendCmdRecvText("refsfrom:" & offset & ":" & frmMain.hwnd)
     If Right(tmp, 1) = "," Then tmp = Mid(tmp, 1, Len(tmp) - 1)
     If is64BitMode Then
         xRefsFrom = csvToHex(tmp)
@@ -333,12 +333,12 @@ End Function
 
 
 Function getName(offset)
-    getName = ipc.SendCmdRecvText("getname:" & offset & ":" & Form1.hwnd)
+    getName = ipc.SendCmdRecvText("getname:" & offset & ":" & frmMain.hwnd)
     If getName = "NULL" Then getName = ""
 End Function
 
  Function functionName(functionIndex)
-    functionName = ipc.SendCmdRecvText("funcname:" & functionIndex & ":" & Form1.hwnd)
+    functionName = ipc.SendCmdRecvText("funcname:" & functionIndex & ":" & frmMain.hwnd)
  End Function
 
 '
@@ -381,7 +381,7 @@ Sub addComment(offset, comment)
 End Sub
 
 Function getComment(offset)
-    getComment = ipc.SendCmdRecvText("getcomment:" & offset & ":" & Form1.hwnd)
+    getComment = ipc.SendCmdRecvText("getcomment:" & offset & ":" & frmMain.hwnd)
     If getComment = "NULL" Then getComment = Empty
 End Function
 
@@ -410,7 +410,7 @@ Function funcVAByName(Name)
     If Not is64BitMode Then
         funcVAByName = ipc.SendCmdRecvInt("name_va:" & Name)
     Else
-        funcVAByName = ipc.SendCmdRecvText("name_va:" & Name & ":" & Form1.hwnd)
+        funcVAByName = ipc.SendCmdRecvText("name_va:" & Name & ":" & frmMain.hwnd)
         funcVAByName = tmp_x.setVal(funcVAByName).toString(mHex)
     End If
 End Function
@@ -455,7 +455,7 @@ Function jump(va)
         ipc.quickCall qcmJmpAddr_32, cCLng(va)
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
         ipc.Send "jmp:" & tmp_x.toString(mHex)
@@ -478,7 +478,7 @@ Function undefine(va)
         ipc.quickCall qcmUndef_32, cCLng(va)
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
         ipc.Send "undefine:" & tmp_x.toString(mHex)
@@ -491,7 +491,7 @@ Function showEA(va)
         ipc.quickCall qcmShow_32, cCLng(va)
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
         ipc.Send "show:" & tmp_x.toString(mHex)
@@ -504,7 +504,7 @@ Function hideEA(va)
         ipc.quickCall qcmHide_32, cCLng(va)
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
         ipc.Send "hide:" & tmp_x.toString(mHex)
@@ -517,7 +517,7 @@ End Function
         ipc.quickCall qcmRemName_32, cCLng(va)
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Sub
         End If
         ipc.Send "remname:" & tmp_x.toString(mHex)
@@ -530,7 +530,7 @@ Sub makeCode(va)
         ipc.quickCall qcmMakeCode_32, cCLng(va)
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Sub
         End If
         ipc.Send "makecode:" & tmp_x.toString(mHex)
@@ -543,7 +543,7 @@ Function funcIndexFromVA(va)
         funcIndexFromVA = ipc.quickCall(qcmFuncIdx_32, cCLng(va))
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
         funcIndexFromVA = ipc.SendCmdRecvInt("funcindex:" & tmp_x.toString(mHex))
@@ -556,10 +556,10 @@ Function nextEA(va)
         nextEA = ipc.quickCall(qcmNextEa_32, cCLng(va))
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
-        nextEA = ipc.SendCmdRecvText("nextea:" & tmp_x.toString(mHex) & ":" & Form1.hwnd)
+        nextEA = ipc.SendCmdRecvText("nextea:" & tmp_x.toString(mHex) & ":" & frmMain.hwnd)
         nextEA = tmp_x.setVal(nextEA).toString(mHex)
     End If
 End Function
@@ -570,10 +570,10 @@ Function prevEA(va)
         prevEA = ipc.quickCall(qcmPrevEa_32, cCLng(va))
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
-        prevEA = ipc.SendCmdRecvText("prevea:" & tmp_x.toString(mHex) & ":" & Form1.hwnd)
+        prevEA = ipc.SendCmdRecvText("prevea:" & tmp_x.toString(mHex) & ":" & frmMain.hwnd)
         prevEA = tmp_x.setVal(prevEA).toString(mHex)
     End If
 End Function
@@ -591,7 +591,7 @@ End Function
      If Not is64BitMode Then
         functionStart = ipc.quickCall(qcmFuncStart_32, cCLng(functionIndex))
      Else
-        functionStart = ipc.SendCmdRecvText("funcstart:" & functionIndex & ":" & Form1.hwnd)
+        functionStart = ipc.SendCmdRecvText("funcstart:" & functionIndex & ":" & frmMain.hwnd)
         functionStart = tmp_x.setVal(functionStart).toString(mHex)
      End If
  End Function
@@ -601,7 +601,7 @@ End Function
      If Not is64BitMode Then
         functionEnd = ipc.quickCall(qcmFuncEnd_32, cCLng(functionIndex))
      Else
-        functionEnd = ipc.SendCmdRecvText("funcend:" & functionIndex & ":" & Form1.hwnd)
+        functionEnd = ipc.SendCmdRecvText("funcend:" & functionIndex & ":" & frmMain.hwnd)
         functionEnd = tmp_x.setVal(functionEnd).toString(mHex)
      End If
  End Function
@@ -612,10 +612,10 @@ End Function
         readByte = CByte(ipc.quickCall(qcmReadByte_32, cCLng(va)))
      Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
-        readByte = ipc.SendCmdRecvText("readbyte:" & tmp_x.toString(mHex) & ":" & Form1.hwnd)
+        readByte = ipc.SendCmdRecvText("readbyte:" & tmp_x.toString(mHex) & ":" & frmMain.hwnd)
         readByte = Right(readByte, 2)
      End If
 End Function
@@ -627,20 +627,20 @@ Function readLong(va)
          readLong = CLng(ipc.quickCall(qcmReadLong_32, cCLng(va)))
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
-        readLong = ipc.SendCmdRecvInt("getlong:" & tmp_x.toString(mHex)) ' & ":" & Form1.hwnd)
+        readLong = ipc.SendCmdRecvInt("getlong:" & tmp_x.toString(mHex)) ' & ":" & frmmain.hwnd)
     End If
 End Function
 
 Function readQWord(va)
     On Error Resume Next
     If Not tmp_x.fromString(va) Then
-        Form1.List1.AddItem "Failed to convert va: " & va
+        frmMain.List1.AddItem "Failed to convert va: " & va
         Exit Function
     End If
-    readQWord = ipc.SendCmdRecvText("getx64:" & tmp_x.toString(mHex) & ":" & Form1.hwnd)
+    readQWord = ipc.SendCmdRecvText("getx64:" & tmp_x.toString(mHex) & ":" & frmMain.hwnd)
 End Function
 
 Function readShort(va)
@@ -650,10 +650,10 @@ Function readShort(va)
          readShort = CLng(ipc.quickCall(qcmReadShort_32, cCLng(va)))
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
-        readShort = ipc.SendCmdRecvInt("getword:" & tmp_x.toString(mHex)) '& ":" & Form1.hwnd)
+        readShort = ipc.SendCmdRecvInt("getword:" & tmp_x.toString(mHex)) '& ":" & frmmain.hwnd)
     End If
 End Function
 
@@ -665,7 +665,7 @@ Function originalByte(va)
          originalByte = CByte(ipc.quickCall(qcmOrgByte_32, cCLng(va)))
     Else
         If Not tmp_x.fromString(va) Then
-            Form1.List1.AddItem "Failed to convert va: " & va
+            frmMain.List1.AddItem "Failed to convert va: " & va
             Exit Function
         End If
         originalByte = ipc.SendCmdRecvInt("orgbyte:" & tmp_x.toString(mHex))
@@ -677,7 +677,7 @@ Function imageBase()
     If Not is64BitMode Then
          imageBase = ipc.quickCall(qcmImgBase_32)
     Else
-        imageBase = ipc.SendCmdRecvText("imgbase:" & Form1.hwnd)
+        imageBase = ipc.SendCmdRecvText("imgbase:" & frmMain.hwnd)
         imageBase = tmp_x.setVal(imageBase).toString(mHex)
     End If
 End Function
@@ -686,7 +686,7 @@ Function screenEA()
     If Not is64BitMode Then
         screenEA = ipc.quickCall(qcmScreenEA_32)
     Else
-        screenEA = ipc.SendCmdRecvText("screenea:" & Form1.hwnd)
+        screenEA = ipc.SendCmdRecvText("screenea:" & frmMain.hwnd)
         screenEA = tmp_x.setVal(screenEA).toString(mHex)
     End If
 End Function
@@ -761,12 +761,12 @@ Function readFile(filename) As Variant
   On Error Resume Next
    
   If InStr(1, filename, "%sp%", vbTextCompare) > 0 Then
-        If Len(Form1.loadedFile) = 0 Then
+        If Len(frmMain.loadedFile) = 0 Then
             MsgBox "can not use %sp variable yet in file path file not saved!"
             Exit Function
         End If
         
-        temp = fso.GetParentFolder(Form1.loadedFile)
+        temp = fso.GetParentFolder(frmMain.loadedFile)
         filename = Replace(filename, "%sp%", temp, , , vbTextCompare)
   End If
   
@@ -787,12 +787,12 @@ Sub writeFile(path, it)
     
     If InStr(1, path, "%sp%", vbTextCompare) > 0 Then
     
-        If Len(Form1.loadedFile) = 0 Then
+        If Len(frmMain.loadedFile) = 0 Then
             MsgBox "can not use %sp variable yet in file path file not saved!"
             Exit Sub
         End If
         
-        temp = fso.GetParentFolder(Form1.loadedFile)
+        temp = fso.GetParentFolder(frmMain.loadedFile)
         path = Replace(path, "%sp%", temp, , , vbTextCompare)
       
     End If

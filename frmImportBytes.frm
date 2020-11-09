@@ -115,7 +115,7 @@ Private Sub cmdImport_Click()
         Exit Sub
     End If
     
-    ret = Form1.ida.importFile(ul.toString(), txtFile, txtSect)
+    ret = frmMain.ida.importFile(ul.toString(), txtFile, txtSect)
     If ret > 0 Then
         MsgBox "Import success!", vbInformation
     Else
@@ -126,8 +126,8 @@ End Sub
 
 Private Sub Form_Load()
     On Error Resume Next
-    Me.Icon = Form1.Icon
-    cmdImport.enabled = Form1.ida.isUp
+    Me.Icon = frmMain.Icon
+    cmdImport.enabled = frmMain.ida.isUp
 End Sub
 
 Private Sub txtFile_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
